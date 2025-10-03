@@ -1,8 +1,15 @@
 # codex-driver
 
-Experimental headless driver for the Codex agent. This crate exposes a library
-API and a companion binary (`headless-codex`) that can be used to send prompts
-and stream Codex events without the interactive TUI.
+Experimental headless driver for the Codex agent.  Exposes a library API that allows
+for controlling a codex agent via a pair of crossbeam channels - BYO TUI, logic, control agents,
+whatever.
+
+# Safety Note
+
+This is super experimental.  I am playing around with it, and it works and is -pretty cool-.  However,
+it is untested and potentially dangerous.  Use at your own risk.
+
+🚨 This driver currently forces Codex into "danger" mode (no sandbox/approvals). 🚨
 
 ## Features
 
@@ -48,22 +55,3 @@ fn main() -> anyhow::Result<()> {
 ```
 
 See [`examples/basic.rs`](examples/basic.rs) for a complete example.
-
-## CLI
-
-The `headless-codex` binary wraps the library API. Run a single prompt:
-
-```bash
-cargo run -p codex-driver --bin headless-codex -- --prompt "Hello Codex!"
-```
-
-Enter interactive mode:
-
-```bash
-cargo run -p codex-driver --bin headless-codex -- --interactive
-```
-
-## Safety Note
-
-This driver currently forces Codex into "danger" mode (no sandbox/approvals).
-Use only in controlled environments.
