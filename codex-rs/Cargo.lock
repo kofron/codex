@@ -1084,6 +1084,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "codex-driver"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "clap",
+ "codex-common",
+ "codex-core",
+ "codex-ollama",
+ "codex-protocol",
+ "crossbeam-channel",
+ "mcp-types",
+ "thiserror 2.0.16",
+ "tokio",
+ "toml",
+]
+
+[[package]]
 name = "codex-exec"
 version = "0.0.0"
 dependencies = [

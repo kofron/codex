@@ -12,6 +12,7 @@ members = [
     "cli",
     "common",
     "core",
+    "codex-driver",
     "exec",
     "execpolicy",
     "file-search",
@@ -55,6 +56,7 @@ codex-arg0 = { path = "arg0" }
 codex-chatgpt = { path = "chatgpt" }
 codex-common = { path = "common" }
 codex-core = { path = "core" }
+codex-driver = { path = "codex-driver" }
 codex-exec = { path = "exec" }
 codex-file-search = { path = "file-search" }
 codex-git-tooling = { path = "git-tooling" }

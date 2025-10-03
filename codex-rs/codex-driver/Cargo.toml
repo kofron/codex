@@ -1,0 +1,30 @@
+[package]
+name = "codex-driver"
+version = "0.0.0"
+edition = "2024"
+publish = false
+readme = "README.md"
+
+[lib]
+name = "codex_driver"
+path = "src/lib.rs"
+
+[[bin]]
+name = "headless-codex"
+path = "src/bin/headless-codex.rs"
+
+[dependencies]
+clap = { workspace = true, features = ["derive"], optional = false }
+codex-common = { workspace = true, features = ["cli"] }
+codex-core = { workspace = true }
+codex-ollama = { workspace = true }
+codex-protocol = { workspace = true }
+crossbeam-channel = "0.5"
+async-trait = { workspace = true }
+mcp-types = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+toml = { workspace = true }
+
+[dev-dependencies]
+anyhow = "1"
