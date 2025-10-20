@@ -1108,6 +1108,7 @@ mod tests {
     use codex_core::config::ConfigToml;
     use codex_core::error::CodexErr;
     use codex_core::protocol::McpInvocation;
+    use codex_core::protocol::ModelStreamClosedEvent;
     use codex_protocol::ConversationId;
     use std::collections::HashMap;
     use std::fs;
@@ -1255,6 +1256,19 @@ mod tests {
             }
             other => panic!("unexpected plan event {other:?}"),
         }
+
+        harness.emit(EventMsg::ModelStreamClosed(ModelStreamClosedEvent {
+            had_completion: true,
+        }));
+        let stream_closed_evt = runtime
+            .block_on(async { event_rx.recv().await })
+            .expect("stream closed event");
+        assert!(matches!(
+            stream_closed_evt,
+            ServerEvent::StreamClosed {
+                had_completion: true
+            }
+        ));
 
         let invocation = McpInvocation {
             server: "server".to_string(),
