@@ -55,6 +55,7 @@ use codex_core::protocol::PatchApplyBeginEvent;
 use codex_core::protocol::PatchApplyEndEvent;
 use codex_core::protocol::ReviewDecision;
 use codex_core::protocol::SessionConfiguredEvent;
+use codex_core::protocol::SessionSource;
 use codex_core::protocol::StreamErrorEvent;
 use codex_core::protocol::TaskCompleteEvent;
 use codex_core::protocol::TokenCountEvent;
@@ -488,7 +489,8 @@ impl SessionHandle {
 
         let cli_overrides = parse_cli_overrides(&session.raw_cli_overrides)?;
         let overrides = build_config_overrides(&session);
-        let config = Config::load_with_cli_overrides(cli_overrides, overrides)
+        let config = runtime
+            .block_on(Config::load_with_cli_overrides(cli_overrides, overrides))
             .map_err(SessionStartError::ConfigLoad)?;
 
         if session.use_oss {
@@ -497,8 +499,11 @@ impl SessionHandle {
                 .map_err(|err| SessionStartError::OssSetup(err.to_string()))?;
         }
 
-        let auth_manager = AuthManager::shared(config.codex_home.clone());
-        let conversation_manager = Arc::new(ConversationManager::new(auth_manager.clone()));
+        let auth_manager = AuthManager::shared(config.codex_home.clone(), false);
+        let conversation_manager = Arc::new(ConversationManager::new(
+            auth_manager.clone(),
+            SessionSource::Unknown,
+        ));
 
         let (command_tx, command_rx) = crossbeam_channel::unbounded();
         let (event_tx, event_rx) = crossbeam_channel::unbounded();
@@ -1108,7 +1113,7 @@ mod tests {
     use codex_core::config::ConfigToml;
     use codex_core::error::CodexErr;
     use codex_core::protocol::McpInvocation;
-    use codex_core::protocol::ModelStreamClosedEvent;
+    use codex_core::protocol::SessionSource;
     use codex_protocol::ConversationId;
     use std::collections::HashMap;
     use std::fs;
@@ -1128,7 +1133,10 @@ mod tests {
 
         let (conversation, harness) = MockConversation::new();
         let auth_manager = AuthManager::from_auth_for_testing(CodexAuth::from_api_key("dummy"));
-        let conversation_manager = Arc::new(ConversationManager::new(auth_manager.clone()));
+        let conversation_manager = Arc::new(ConversationManager::new(
+            auth_manager.clone(),
+            SessionSource::Unknown,
+        ));
         let codex_home = std::env::temp_dir().join(format!(
             "codex-driver-test-{}",
             SystemTime::now()
@@ -1256,19 +1264,6 @@ mod tests {
             }
             other => panic!("unexpected plan event {other:?}"),
         }
-
-        harness.emit(EventMsg::ModelStreamClosed(ModelStreamClosedEvent {
-            had_completion: true,
-        }));
-        let stream_closed_evt = runtime
-            .block_on(async { event_rx.recv().await })
-            .expect("stream closed event");
-        assert!(matches!(
-            stream_closed_evt,
-            ServerEvent::StreamClosed {
-                had_completion: true
-            }
-        ));
 
         let invocation = McpInvocation {
             server: "server".to_string(),
